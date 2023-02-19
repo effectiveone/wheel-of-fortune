@@ -57,6 +57,16 @@ const WheelOfFortune = () => {
       250 -
       labelRadius * Math.cos(((rotateAngle + sweepAngle / 2) * Math.PI) / 180);
 
+    const arrowSize = 20;
+    const arrowAngle = rotateAngle + sweepAngle / 2;
+    const arrowRadians = arrowAngle * (Math.PI / 180);
+    const arrowX = 250 + 180 * Math.sin(arrowRadians);
+    const arrowY = 250 - 180 * Math.cos(arrowRadians);
+
+    const arrowPath = `M${arrowX - arrowSize},${arrowY} L${arrowX},${
+      arrowY - arrowSize
+    } L${arrowX + arrowSize},${arrowY} Z`;
+
     return (
       <React.Fragment key={section.label}>
         <Path
@@ -64,6 +74,14 @@ const WheelOfFortune = () => {
           fill={section.color}
           transform={`rotate(${rotateAngle}, 250, 250)`}
         />
+        {selectedReward?.label === section.label && (
+          <Path
+            key={`${section.label}-arrow`}
+            d={arrowPath}
+            fill="white"
+            // transform={`rotate(${arrowAngle}, 250, 250)`}
+          />
+        )}
         <SvgText x={labelX} y={labelY} textAnchor="middle" fontSize="16">
           {section.label}
         </SvgText>
@@ -84,11 +102,12 @@ const WheelOfFortune = () => {
           strokeWidth="2"
         />
         <SvgText
-          x="245"
+          x="290"
           y="257"
           textAnchor="end"
           fontSize="16"
           fontWeight="bold"
+          style={styles.centeredText}
         >
           {isWheelSpinning
             ? "?"
@@ -111,6 +130,12 @@ const WheelOfFortune = () => {
 };
 
 const styles = StyleSheet.create({
+  centeredText: {
+    display: "flex",
+    textAlign: "center",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
     alignItems: "center",
