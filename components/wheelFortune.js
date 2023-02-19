@@ -8,22 +8,9 @@ import {
   Easing,
 } from "react-native";
 import Svg, { Circle, Text as SvgText, Path } from "react-native-svg";
+import rewards from "../utils/helpers/rewards";
 
 const WheelOfFortune = () => {
-  const rewards = [
-    { label: "$100", value: 100, color: "#E53935" },
-    { label: "$200", value: 200, color: "#9C27B0" },
-    { label: "$300", value: 300, color: "#673AB7" },
-    { label: "$400", value: 400, color: "#3F51B5" },
-    { label: "$500", value: 500, color: "#2196F3" },
-    { label: "$600", value: 600, color: "#00BCD4" },
-    { label: "$700", value: 700, color: "#009688" },
-    { label: "$800", value: 800, color: "#4CAF50" },
-    { label: "$900", value: 900, color: "#8BC34A" },
-    { label: "$1000", value: 1000, color: "#FFC107" },
-    { label: "$1100", value: 1100, color: "#FF9800" },
-    { label: "$1200", value: 1200, color: "#FF5722" },
-  ];
   const [selectedReward, setSelectedReward] = useState(null);
   const [isWheelSpinning, setIsWheelSpinning] = useState(false);
 
@@ -62,13 +49,25 @@ const WheelOfFortune = () => {
       250 + 200 * Math.sin((sweepAngle * Math.PI) / 180)
     },${250 - 200 * Math.cos((sweepAngle * Math.PI) / 180)} L250,250 Z`;
 
+    const labelRadius = 150;
+    const labelX =
+      250 +
+      labelRadius * Math.sin(((rotateAngle + sweepAngle / 2) * Math.PI) / 180);
+    const labelY =
+      250 -
+      labelRadius * Math.cos(((rotateAngle + sweepAngle / 2) * Math.PI) / 180);
+
     return (
-      <Path
-        key={section.label}
-        d={path}
-        fill={section.color}
-        transform={`rotate(${rotateAngle}, 250, 250)`}
-      />
+      <React.Fragment key={section.label}>
+        <Path
+          d={path}
+          fill={section.color}
+          transform={`rotate(${rotateAngle}, 250, 250)`}
+        />
+        <SvgText x={labelX} y={labelY} textAnchor="middle" fontSize="16">
+          {section.label}
+        </SvgText>
+      </React.Fragment>
     );
   };
 
