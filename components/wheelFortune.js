@@ -13,14 +13,14 @@ import rewards from "../utils/helpers/rewards";
 const WheelOfFortune = () => {
   const [selectedReward, setSelectedReward] = useState(null);
   const [isWheelSpinning, setIsWheelSpinning] = useState(false);
-
+  const [spinAngle, setSpinAngle] = useState(null);
   const spinValue = useRef(new Animated.Value(0)).current;
 
   const spinWheel = () => {
     if (isWheelSpinning) return;
 
     const spinDuration = 3000;
-    const spinAngle = Math.floor(Math.random() * 360) + 1080; // Obrót o losowy kąt między 1080 a 1440 stopni
+    setSpinAngle(Math.floor(Math.random() * 360) + 1080);
 
     Animated.timing(spinValue, {
       toValue: spinAngle,
@@ -42,8 +42,25 @@ const WheelOfFortune = () => {
     outputRange: ["0deg", "360deg"],
   });
 
+  const sweepAngle = 360 / rewards.length;
+  const keyframes = `
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(${360 + spinAngle}deg);
+      }
+    }
+  `;
+
+  const wheelStyle = {
+    animation: `spin ${5}s ease-in-out forwards`,
+    animationDelay: "0.5s",
+    transformOrigin: "center",
+  };
+
   const renderWheelSection = (section, index) => {
-    const sweepAngle = 360 / rewards.length;
     const rotateAngle = index * sweepAngle;
     const path = `M250,250 L250,50 A200,200 0 0,1 ${
       250 + 200 * Math.sin((sweepAngle * Math.PI) / 180)
@@ -69,22 +86,24 @@ const WheelOfFortune = () => {
 
     return (
       <React.Fragment key={section.label}>
-        <Path
-          d={path}
-          fill={section.color}
-          transform={`rotate(${rotateAngle}, 250, 250)`}
-        />
-        {selectedReward?.label === section.label && (
+        <g style={{ ...wheelStyle, transform: `rotate(${spinAngle}deg)` }}>
           <Path
-            key={`${section.label}-arrow`}
-            d={arrowPath}
-            fill="white"
-            // transform={`rotate(${arrowAngle}, 250, 250)`}
+            d={path}
+            fill={section.color}
+            transform={`rotate(${rotateAngle}, 250, 250)`}
           />
-        )}
-        <SvgText x={labelX} y={labelY} textAnchor="middle" fontSize="16">
-          {section.label}
-        </SvgText>
+          {selectedReward?.label === section.label && (
+            <Path
+              key={`${section.label}-arrow`}
+              d={arrowPath}
+              fill="white"
+              // transform={`rotate(${arrowAngle}, 250, 250)`}
+            />
+          )}
+          <SvgText x={labelX} y={labelY} textAnchor="middle" fontSize="16">
+            {section.label}
+          </SvgText>
+        </g>
       </React.Fragment>
     );
   };
