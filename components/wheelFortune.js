@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -15,6 +15,7 @@ const WheelOfFortune = () => {
   const [isWheelSpinning, setIsWheelSpinning] = useState(false);
   const [spinAngle, setSpinAngle] = useState(null);
   const spinValue = useRef(new Animated.Value(0)).current;
+  const [isSpinning, setIsSpinning] = useState(false);
 
   const spinWheel = () => {
     if (isWheelSpinning) return;
@@ -34,6 +35,8 @@ const WheelOfFortune = () => {
       setIsWheelSpinning(false);
     });
 
+    setIsSpinning(true);
+
     setIsWheelSpinning(true);
   };
 
@@ -42,25 +45,8 @@ const WheelOfFortune = () => {
     outputRange: ["0deg", "360deg"],
   });
 
-  const sweepAngle = 360 / rewards.length;
-  const keyframes = `
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(${360 + spinAngle}deg);
-      }
-    }
-  `;
-
-  const wheelStyle = {
-    animation: `spin ${5}s ease-in-out forwards`,
-    animationDelay: "0.5s",
-    transformOrigin: "center",
-  };
-
   const renderWheelSection = (section, index) => {
+    const sweepAngle = 360 / rewards.length;
     const rotateAngle = index * sweepAngle;
     const path = `M250,250 L250,50 A200,200 0 0,1 ${
       250 + 200 * Math.sin((sweepAngle * Math.PI) / 180)
@@ -84,9 +70,32 @@ const WheelOfFortune = () => {
       arrowY - arrowSize
     } L${arrowX + arrowSize},${arrowY} Z`;
 
+    const wheelStyle = {
+      animation: isSpinning ? `spin ${5}s ease-in-out forwards` : "",
+      animationDelay: "0.5s",
+      transform: `rotate(${spinAngle}deg)`,
+      transformOrigin: "center",
+    };
+
+    const keyframes = `
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(${360 + spinAngle}deg);
+        }
+      }
+    `;
+
+    const onAnimationEnd = () => {
+      setIsSpinning(false);
+    };
+
     return (
       <React.Fragment key={section.label}>
-        <g style={{ ...wheelStyle, transform: `rotate(${spinAngle}deg)` }}>
+        <style>{keyframes}</style>
+        <g style={wheelStyle} onAnimationEnd={onAnimationEnd}>
           <Path
             d={path}
             fill={section.color}
