@@ -9,41 +9,17 @@ import {
 } from "react-native";
 import Svg, { Circle, Text as SvgText, Path } from "react-native-svg";
 import rewards from "../utils/helpers/rewards";
+import useSpinWheel from "../utils/hook/useSpinWheel";
 
 const WheelOfFortune = () => {
-  const [selectedReward, setSelectedReward] = useState(null);
-  const [isWheelSpinning, setIsWheelSpinning] = useState(false);
-  const [spinAngle, setSpinAngle] = useState(null);
-  const spinValue = useRef(new Animated.Value(0)).current;
-  const [isSpinning, setIsSpinning] = useState(false);
-
-  const spinWheel = () => {
-    if (isWheelSpinning) return;
-
-    const spinDuration = 3000;
-    setSpinAngle(Math.floor(Math.random() * 360) + 1080);
-
-    Animated.timing(spinValue, {
-      toValue: spinAngle,
-      duration: spinDuration,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start(() => {
-      // Po zakończeniu animacji wybieramy losową nagrodę
-      const randomReward = rewards[Math.floor(Math.random() * rewards.length)];
-      setSelectedReward(randomReward);
-      setIsWheelSpinning(false);
-    });
-
-    setIsSpinning(true);
-
-    setIsWheelSpinning(true);
-  };
-
-  const spin = spinValue.interpolate({
-    inputRange: [0, 360],
-    outputRange: ["0deg", "360deg"],
-  });
+  const {
+    selectedReward,
+    isWheelSpinning,
+    spin,
+    spinWheel,
+    wheelStyle,
+    spinAngle,
+  } = useSpinWheel(rewards);
 
   const renderWheelSection = (section, index) => {
     const sweepAngle = 360 / rewards.length;
@@ -70,13 +46,6 @@ const WheelOfFortune = () => {
       arrowY - arrowSize
     } L${arrowX + arrowSize},${arrowY} Z`;
 
-    const wheelStyle = {
-      animation: isSpinning ? `spin ${5}s ease-in-out forwards` : "",
-      animationDelay: "0.5s",
-      transform: `rotate(${spinAngle}deg)`,
-      transformOrigin: "center",
-    };
-
     const keyframes = `
       @keyframes spin {
         from {
@@ -89,7 +58,7 @@ const WheelOfFortune = () => {
     `;
 
     const onAnimationEnd = () => {
-      setIsSpinning(false);
+      isWheelSpinning(false);
     };
 
     return (
@@ -101,13 +70,8 @@ const WheelOfFortune = () => {
             fill={section.color}
             transform={`rotate(${rotateAngle}, 250, 250)`}
           />
-          {selectedReward?.label === section.label && (
-            <Path
-              key={`${section.label}-arrow`}
-              d={arrowPath}
-              fill="white"
-              // transform={`rotate(${arrowAngle}, 250, 250)`}
-            />
+          {selectedReward?.label === section.label && !isWheelSpinning && (
+            <Path key={`${section.label}-arrow`} d={arrowPath} fill="white" />
           )}
           <SvgText x={labelX} y={labelY} textAnchor="middle" fontSize="16">
             {section.label}
